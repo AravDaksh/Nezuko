@@ -6,20 +6,21 @@ $botToken = '7611362260:AAEmp1VMosGD2BcU7Ar7_DMLnUG0gWKH0q4';
 $botUrl = "$hosting/bot/";
 
 $input = json_decode(file_get_contents('php://input'), 1);
+file_put_contents(__DIR__ . '/debug.log', date('Y-m-d H:i:s') . " INPUT:\n" . file_get_contents('php://input') . "\n\n", FILE_APPEND);
 
-$pro = file_get_contents("https://api.telegram.org/bot$botToken/setWebhook?url=$botUrl&drop_pending_updates=True");
+/* $pro = file_get_contents("https://api.telegram.org/bot$botToken/setWebhook?url=$botUrl&drop_pending_updates=True");
 
 echo "pro:$pro";
 
 if(strpos($pro, 'Many')){
 file_get_contents("https://api.telegram.org/bot$botToken/setWebhook?url=$botUrl");
-}
+} */
 
 include('proxys.php');
 require_once('functions.php');
 
 $f_data = json_decode(file_get_contents(__DIR__ . '/data.json'), true);
-file_put_contents(__DIR__ . '/debug.log', date('Y-m-d H:i:s') . " INPUT:\n" . file_get_contents('php://input') . "\n\n", FILE_APPEND);
+
 if(isset($input['message'])){
 	$user = $input['message']['from'];
 	$chat = $input['message']['chat'];
