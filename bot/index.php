@@ -19,7 +19,7 @@ include('proxys.php');
 require_once('functions.php');
 
 $f_data = json_decode(file_get_contents(__DIR__ . '/data.json'), true);
-
+file_put_contents(__DIR__ . '/debug.log', date('Y-m-d H:i:s') . " INPUT:\n" . file_get_contents('php://input') . "\n\n", FILE_APPEND);
 if(isset($input['message'])){
 	$user = $input['message']['from'];
 	$chat = $input['message']['chat'];
