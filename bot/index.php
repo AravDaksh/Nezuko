@@ -18,7 +18,7 @@ file_get_contents("https://api.telegram.org/bot$botToken/setWebhook?url=$botUrl"
 include('proxys.php');
 require_once('functions.php');
 
-$f_data = json_decode(file_get_contents('data.json'), 1);
+$f_data = json_decode(file_get_contents(__DIR__ . '/data.json'), true);
 
 if(isset($input['message'])){
 	$user = $input['message']['from'];
@@ -29,7 +29,7 @@ if(isset($input['message'])){
 $userlink = "<a href='tg://user?id=".$user['id'].">".$user['first_name']."</a>";
 
 $admins = [
-	'5299092746',
+	'5032657924',
 	'1205717709',
 	'5435611792',
 	'1649834075',
