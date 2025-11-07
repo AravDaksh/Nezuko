@@ -1,6 +1,6 @@
 <?php
 
-include('hosting.php');
+include __DIR__ . '/../hosting.php';
 
 $botToken = '7611362260:AAEmp1VMosGD2BcU7Ar7_DMLnUG0gWKH0q4';
 $botUrl = "$hosting/bot/";
