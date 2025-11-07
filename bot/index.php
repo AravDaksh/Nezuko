@@ -3,21 +3,13 @@
 include __DIR__ . '/../hosting.php';
 
 $botToken = '7611362260:AAEmp1VMosGD2BcU7Ar7_DMLnUG0gWKH0q4';
-$botUrl = "$hosting/bot/";
+$botUrl = "$hosting/bot/index.php";
 
 $input = json_decode(file_get_contents('php://input'), true);
 
 // DEBUG: log raw and parsed input (temporary)
 file_put_contents(__DIR__ . '/debug.log', date('Y-m-d H:i:s') . " RAW INPUT: " . file_get_contents('php://input') . "\n", FILE_APPEND);
 file_put_contents(__DIR__ . '/debug.log', date('Y-m-d H:i:s') . " PARSED INPUT: " . var_export($input, true) . "\n", FILE_APPEND);
-
-/* $pro = file_get_contents("https://api.telegram.org/bot$botToken/setWebhook?url=$botUrl&drop_pending_updates=True");
-
-echo "pro:$pro";
-
-if(strpos($pro, 'Many')){
-file_get_contents("https://api.telegram.org/bot$botToken/setWebhook?url=$botUrl");
-} */
 
 include('proxys.php');
 require_once('functions.php');
@@ -66,8 +58,9 @@ $sellers = [
 ];
 $isSeller = in_array($user['id'], $sellers);
 
-$isPremiun = in_array($user['id'], $f_data['premiuns']);
-$isGAppd = in_array($chat['id'], $f_data['groups']);
+$isPremiun = in_array($user['id'] ?? null, $f_data['premiuns']);
+$isGAppd   = in_array($chat['id'] ?? null, $f_data['groups']);
+
 
 include('kbinline.php');
 
@@ -109,21 +102,34 @@ include('kakuzu.php');//Braintree + vbv €7.94
 include('konan.php');//Stripe Auth 4req
 include('deidara.php');//Shopify auth
 
+// Always return 200 JSON to Telegram
+http_response_code(200);
+header('Content-Type: application/json');
+echo json_encode(['ok' => true]);
+
+
 function output($method, $data){
-	$out = curl_init();
-	
-	curl_setopt_array($out, [
-CURLOPT_URL => 'https://api.telegram.org/bot'.$GLOBALS['botToken'].'/'.$method.'',
-CURLOPT_POST => 1,
-CURLOPT_POSTFIELDS => array_merge([
-	'parse_mode' => 'HTML'
-], $data),
-CURLOPT_RETURNTRANSFER => 1
-	]);
-	
-	$result = curl_exec($out);
-	
-	curl_close($out);
-	
-	return json_decode($result, 1);
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => 'https://api.telegram.org/bot'.$GLOBALS['botToken'].'/'.$method,
+        CURLOPT_POST => 1,
+        CURLOPT_POSTFIELDS => array_merge(['parse_mode' => 'HTML'], $data),
+        CURLOPT_RETURNTRANSFER => 1,
+        CURLOPT_TIMEOUT => 10,
+    ]);
+    $result = curl_exec($ch);
+    $err = curl_error($ch);
+    curl_close($ch);
+
+    // Log result and any error for debugging
+    file_put_contents(__DIR__ . '/debug.log',
+        date('Y-m-d H:i:s') . " OUT " . $method .
+        " DATA: " . json_encode($data) .
+        "\nRESULT: " . ($result ?? 'NULL') .
+        "\nCURLERR: " . ($err ?: 'NONE') . "\n\n",
+        FILE_APPEND
+    );
+
+    return json_decode($result, true);
 }
+
