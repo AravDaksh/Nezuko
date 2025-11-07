@@ -5,8 +5,11 @@ include __DIR__ . '/../hosting.php';
 $botToken = '7611362260:AAEmp1VMosGD2BcU7Ar7_DMLnUG0gWKH0q4';
 $botUrl = "$hosting/bot/";
 
-$input = json_decode(file_get_contents('php://input'), 1);
-file_put_contents(__DIR__ . '/debug.log', date('Y-m-d H:i:s') . " INPUT:\n" . file_get_contents('php://input') . "\n\n", FILE_APPEND);
+$input = json_decode(file_get_contents('php://input'), true);
+
+// DEBUG: log raw and parsed input (temporary)
+file_put_contents(__DIR__ . '/debug.log', date('Y-m-d H:i:s') . " RAW INPUT: " . file_get_contents('php://input') . "\n", FILE_APPEND);
+file_put_contents(__DIR__ . '/debug.log', date('Y-m-d H:i:s') . " PARSED INPUT: " . var_export($input, true) . "\n", FILE_APPEND);
 
 /* $pro = file_get_contents("https://api.telegram.org/bot$botToken/setWebhook?url=$botUrl&drop_pending_updates=True");
 
@@ -20,6 +23,14 @@ include('proxys.php');
 require_once('functions.php');
 
 $f_data = json_decode(file_get_contents(__DIR__ . '/data.json'), true);
+if (!is_array($f_data)) {
+    $f_data = ['premiuns' => [], 'groups' => [], 'antispam' => []];
+}
+// ensure keys exist
+$f_data['premiuns'] = $f_data['premiuns'] ?? [];
+$f_data['groups'] = $f_data['groups'] ?? [];
+$f_data['antispam'] = $f_data['antispam'] ?? [];
+
 
 if(isset($input['message'])){
 	$user = $input['message']['from'];
