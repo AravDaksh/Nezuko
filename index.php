@@ -11,5 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 // Include your actual bot logic
-require_once __DIR__ . '/Daisuke/bot/index.php';
+require_once __DIR__ . '/Nezuko/bot/index.php';
 ?>
+
