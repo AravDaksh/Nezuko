@@ -1,5 +1,35 @@
 <?php
 
+if (isset($_SERVER['HTTP_X_LOOP_GUARD']) && $_SERVER['HTTP_X_LOOP_GUARD'] === '1') {
+    http_response_code(200);
+    exit("Loop prevented\n");
+}
+
+// 2️⃣ Prevent direct GET retry loops from same IP or user within short time
+$ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$query = $_SERVER['REQUEST_URI'] ?? '';
+$hash = md5($ip . $query);
+
+// Create cache folder if needed
+$cacheDir = __DIR__ . '/../tmp_cache';
+if (!is_dir($cacheDir)) {
+    mkdir($cacheDir, 0777, true);
+}
+
+$cacheFile = "$cacheDir/last_bin_req.cache";
+if (file_exists($cacheFile)) {
+    $last = json_decode(file_get_contents($cacheFile), true);
+    if ($last && $last['hash'] === $hash && time() - $last['time'] < 15) {
+        // same request within 15 seconds → ignore
+        http_response_code(200);
+        exit("Duplicate /bin request ignored\n");
+    }
+}
+
+// Save current request
+file_put_contents($cacheFile, json_encode(['hash' => $hash, 'time' => time()]));
+
+
 function capture($str, $start, $end){	
 	return strpos($str, $start) === false || strpos($str, $end) === false
 ? NULL : explode($end, explode($start, $str)[1])[0];
