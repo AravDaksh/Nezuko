@@ -29,6 +29,10 @@ if(isset($input['message'])){
 	$chat = $input['message']['chat'];
 	$msg = $input['message'];
 }
+if (isset($user['is_bot']) && $user['is_bot']) {
+    http_response_code(200);
+    exit;
+}
 
 $userlink = "<a href='tg://user?id=".$user['id'].">".$user['first_name']."</a>";
 
