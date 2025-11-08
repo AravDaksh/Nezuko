@@ -6,6 +6,36 @@ $botToken = '7611362260:AAEmp1VMosGD2BcU7Ar7_DMLnUG0gWKH0q4';
 $botUrl = "$hosting/bot/index.php";
 
 $input = json_decode(file_get_contents('php://input'), true);
+// ====== DUPLICATE / SPAM PROTECTION ======
+session_start(); // simple storage for free hosts; works fine on Render
+
+// Unique Telegram update ID (every update has one)
+$update_id = $input['update_id'] ?? null;
+
+// Store last processed update to prevent duplicates
+if (isset($_SESSION['last_update_id']) && $_SESSION['last_update_id'] === $update_id) {
+    http_response_code(200);
+    exit; // ignore duplicate resend
+}
+$_SESSION['last_update_id'] = $update_id;
+
+// Optional: prevent repeated identical messages within short time
+$cache_file = __DIR__ . '/last_message.cache';
+$hash = md5(json_encode($input['message'] ?? []));
+
+if (file_exists($cache_file)) {
+    $last = json_decode(file_get_contents($cache_file), true);
+    if ($last && $last['hash'] === $hash && time() - $last['time'] < 10) {
+        // same message as last within 10s → skip
+        http_response_code(200);
+        exit;
+    }
+}
+
+// save current hash
+file_put_contents($cache_file, json_encode(['hash' => $hash, 'time' => time()]));
+// ====== END DUPLICATE / SPAM PROTECTION ======
+
 
 // DEBUG: log raw and parsed input (temporary)
 file_put_contents(__DIR__ . '/debug.log', date('Y-m-d H:i:s') . " RAW INPUT: " . file_get_contents('php://input') . "\n", FILE_APPEND);
