@@ -59,7 +59,7 @@ output('sendMessage', [
 // Enviar un mensaje de espera mientras se procesa la solicitud
 $msgId_bot = output('sendMessage', [
 'chat_id' => $chat['id'],
-'text' => "Procesando tu solicitud...",
+'text' => "#Nezuko | Processing Your Request!",
 'reply_to_message_id' => $msg['message_id']
 ])['result']['message_id'];
 
