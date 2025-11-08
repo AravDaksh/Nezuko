@@ -58,6 +58,36 @@ if(isset($input['message'])){
 	$user = $input['message']['from'];
 	$chat = $input['message']['chat'];
 	$msg = $input['message'];
+
+// ======================================================
+// 🧩 UNIVERSAL ANTI-SPAM + REPEAT GUARD FOR ALL COMMANDS
+// ======================================================
+if (isset($msg['text'])) {
+    $user_id = $user['id'] ?? 'unknown';
+    $text = trim(strtolower($msg['text']));
+    $cache_dir = __DIR__ . '/../tmp_cache';
+    if (!is_dir($cache_dir)) mkdir($cache_dir, 0777, true);
+    $fingerprint = md5($user_id . '|' . $text);
+    $cache_file = "$cache_dir/anti_repeat.cache";
+    $repeat = false;
+    $last = [];
+    if (file_exists($cache_file)) {
+        $last = json_decode(file_get_contents($cache_file), true) ?? [];
+        if (isset($last[$fingerprint]) && time() - $last[$fingerprint] < 10) {
+            output('sendMessage', [
+                'chat_id' => $chat['id'],
+                'text' => "⚠️ Request couldn't be processed. Please wait a few seconds before trying again.",
+            ]);
+            http_response_code(200);
+            exit;
+        }
+    }
+    $last[$fingerprint] = time();
+    if (count($last) > 500) $last = array_slice($last, -500, null, true);
+    file_put_contents($cache_file, json_encode($last));
+}
+// ======================================================
+
 }
 if (isset($user['is_bot']) && $user['is_bot']) {
     http_response_code(200);
